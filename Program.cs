@@ -19,6 +19,8 @@ app.MapGet("/api/tasks", (TaskStore store) =>
 
 app.MapPost("/api/tasks", CreateTask);
 app.MapPut("/api/tasks/{id:int}", UpdateTask);
+app.MapDelete("/api/tasks/{id:int}", DeleteTask);
+app.MapPut("/api/tasks/{id:int}/toggle", ToggleTaskComplete);
 
 app.MapFallbackToFile("index.html");
 
@@ -54,4 +56,19 @@ static IResult UpdateTask(int id, UpdateTaskRequest request, TaskStore store)
     return Results.Ok(task);
 }
 
+static IResult ToggleTaskComplete(int id, TaskStore store)
+{
+    var task = store.ToggleComplete(id);
+    if (task is null)
+        return Results.NotFound(new { message = $"Task {id} was not found." });
+    return Results.Ok(task);
+}
+
+static IResult DeleteTask(int id, TaskStore store)
+{
+    var task = store.Delete(id);
+    if (task is null)
+        return Results.NotFound(new { message = $"Task {id} was not found." });
+    return Results.Ok(task);
+}
 

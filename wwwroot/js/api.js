@@ -41,6 +41,32 @@ window.taskApi = {
         }
 
         return await response.json();
+    },
+
+    async deleteTask(id) {
+        const response = await fetch(`/api/tasks/${id}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const message = await tryReadError(response);
+            throw new Error(message || "Failed to delete task.");
+        }
+
+        return await response.json();
+    },
+
+    async toggleTask(id) {
+        const response = await fetch(`/api/tasks/${id}/toggle`, {
+            method: "PUT"
+        });
+
+        if (!response.ok) {
+            const message = await tryReadError(response);
+            throw new Error(message || "Failed to toggle task.");
+        }
+
+        return await response.json();
     }
 };
 

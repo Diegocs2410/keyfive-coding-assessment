@@ -50,6 +50,31 @@ function App() {
         }
     }
 
+    async function handleDeleteTask(id) {
+        if (!confirm("Are you sure you want to delete this task?")) return;
+
+        setError("");
+
+        try {
+            await window.taskApi.deleteTask(id);
+            setTasks(current => current.filter(task => task.id !== id));
+            if (editingTask && editingTask.id === id) setEditingTask(null);
+        } catch (err) {
+            setError(err.message || "Unable to delete task.");
+        }
+    }
+
+    async function handleToggleTask(id) {
+        setError("");
+
+        try {
+            const updated = await window.taskApi.toggleTask(id);
+            setTasks(current => current.map(task => (task.id === updated.id ? updated : task)));
+        } catch (err) {
+            setError(err.message || "Unable to toggle task.");
+        }
+    }
+
     async function handleSaveEdit(event) {
         event.preventDefault();
 
@@ -120,6 +145,8 @@ function App() {
                             key={task.id}
                             task={task}
                             onEdit={() => setEditingTask({ ...task })}
+                            onDelete={() => handleDeleteTask(task.id)}
+                            onToggle={() => handleToggleTask(task.id)}
                         />
                     ))}
                 </div>
@@ -166,7 +193,7 @@ function App() {
     );
 }
 
-function TaskRow({ task, onEdit }) {
+function TaskRow({ task, onEdit, onDelete, onToggle }) {
     const badgeClass = `badge ${task.priority.toLowerCase()}`;
 
     return (
@@ -184,8 +211,14 @@ function TaskRow({ task, onEdit }) {
             </div>
 
             <div className="actions">
+                <button className="small-button" type="button" onClick={onToggle}>
+                    {task.isComplete ? "Undo" : "Done"}
+                </button>
                 <button className="small-button" type="button" onClick={onEdit}>
                     Edit
+                </button>
+                <button className="small-button danger" type="button" onClick={onDelete}>
+                    Delete
                 </button>
             </div>
         </div>

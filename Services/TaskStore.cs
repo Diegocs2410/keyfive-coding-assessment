@@ -41,6 +41,27 @@ public class TaskStore
         return updated;
     }
 
+    public TaskItem? ToggleComplete(int id)
+    {
+        var index = tasks.FindIndex(t => t.Id == id);
+        if (index < 0)
+            return null;
+        // records are immutable, so we build a copy with the new values
+        var updated = tasks[index] with { IsComplete = !tasks[index].IsComplete };
+        tasks[index] = updated;
+        return updated;
+    }
+
+    public TaskItem? Delete(int id)
+    {
+        var index = tasks.FindIndex(t => t.Id == id);
+        if (index < 0)
+            return null;
+        var deleted = tasks[index];
+        tasks.RemoveAt(index);
+        return deleted;
+    }
+
     public static bool IsValidPriority(string? value)
     {
         return value is "Low" or "Normal" or "High";
