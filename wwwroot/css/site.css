@@ -1,6 +1,16 @@
 :root {
-    color-scheme: light dark;
+    /* This UI is designed light-only. Declaring "light dark" made the browser
+       render native form controls with dark-mode defaults (white text) while the
+       CSS forced light backgrounds, leaving inputs and buttons unreadable. */
+    color-scheme: light;
     font-family: Inter, Arial, Helvetica, sans-serif;
+
+    --text: #17212b;
+    --text-muted: #4d5b6d;
+    --border: #8896a8;
+    --border-subtle: #d9e1ec;
+    --accent: #1a5fd0;
+    --focus: #0b4fc4;
 }
 
 * {
@@ -10,13 +20,23 @@
 body {
     margin: 0;
     background: #f5f7fb;
-    color: #17212b;
+    color: var(--text);
 }
 
+/* Native controls do not inherit color by default; set it explicitly so they
+   stay readable regardless of the visitor's OS theme. */
 button,
 input,
-select {
+select,
+option {
     font: inherit;
+    color: var(--text);
+}
+
+/* Visible keyboard focus on every interactive element (WCAG 2.4.7). */
+:is(.input, .select, .primary-button, .secondary-button, .small-button, .filter-button):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
 }
 
 .app-shell {
@@ -27,7 +47,7 @@ select {
 
 .page-card {
     background: #ffffff;
-    border: 1px solid #d9e1ec;
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
     padding: 24px;
     box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
@@ -40,7 +60,7 @@ select {
 
 .page-subtitle {
     margin: 0 0 24px;
-    color: #526172;
+    color: var(--text-muted);
 }
 
 .row {
@@ -57,17 +77,22 @@ select {
 }
 
 .filter-button {
-    border: 1px solid #c3cfdd;
+    border: 1px solid var(--border);
     background: #fff;
+    color: var(--text);
     border-radius: 999px;
     padding: 8px 14px;
     cursor: pointer;
 }
 
+.filter-button:hover {
+    background: #eef3f9;
+}
+
 .filter-button.active {
-    background: #1f6feb;
+    background: var(--accent);
     color: #fff;
-    border-color: #1f6feb;
+    border-color: var(--accent);
 }
 
 .form-grid {
@@ -80,10 +105,23 @@ select {
 .input,
 .select {
     width: 100%;
-    border: 1px solid #c3cfdd;
+    /* Darker than the original #c3cfdd, which sat at ~1.5:1 against white and
+       failed the 3:1 minimum for control boundaries (WCAG 1.4.11). */
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 10px 12px;
     background: #fff;
+    color: var(--text);
+}
+
+.input::placeholder {
+    color: #5f6d7e;
+    opacity: 1; /* Firefox dims placeholders by default */
+}
+
+.input:focus-visible,
+.select:focus-visible {
+    border-color: var(--focus);
 }
 
 .primary-button,
@@ -92,21 +130,33 @@ select {
     border-radius: 10px;
     padding: 10px 14px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .primary-button {
-    background: #1f6feb;
-    color: white;
+    background: var(--accent);
+    color: #ffffff;
 }
 
+.primary-button:hover:not(:disabled) {
+    background: #164ea8;
+}
+
+/* A flat grey reads as "unavailable" without dropping contrast the way
+   opacity does. */
 .primary-button:disabled {
-    opacity: 0.65;
+    background: #7d8ca1;
+    color: #ffffff;
     cursor: not-allowed;
 }
 
 .secondary-button {
     background: #e7edf5;
-    color: #17212b;
+    color: var(--text);
+}
+
+.secondary-button:hover {
+    background: #d8e2ee;
 }
 
 .task-list {
@@ -115,7 +165,7 @@ select {
 }
 
 .task-card {
-    border: 1px solid #d9e1ec;
+    border: 1px solid var(--border-subtle);
     background: #fbfdff;
     border-radius: 14px;
     padding: 14px 16px;
@@ -131,38 +181,81 @@ select {
 
 .task-title.complete {
     text-decoration: line-through;
-    color: #738295;
+    color: #5a6878;
 }
 
 .task-meta {
-    margin-top: 6px;
-    color: #5d6b7c;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
     font-size: 0.92rem;
 }
 
-.badge {
-    display: inline-block;
+.badge,
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #e9f2ff;
-    color: #275ea8;
+    border: 1px solid transparent;
     font-size: 0.8rem;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+/* A filled dot repeats the priority signal in shape as well as hue, so the
+   meaning survives colour-blindness and greyscale (WCAG 1.4.1). */
+.badge::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+}
+
+.badge {
+    background: #e8eeff;
+    color: #2c47a8;
+    border-color: #c2d0f7;
 }
 
 .badge.high {
-    background: #ffe7e7;
-    color: #b42318;
+    background: #fde8e8;
+    color: #98180f;
+    border-color: #f3b9b9;
 }
 
 .badge.normal {
-    background: #eef3ff;
-    color: #3559c7;
+    background: #e8eeff;
+    color: #2c47a8;
+    border-color: #c2d0f7;
 }
 
 .badge.low {
-    background: #e9f8ef;
-    color: #0f7b3e;
+    background: #e3f6ea;
+    color: #0b6a35;
+    border-color: #b3e0c5;
+}
+
+.status.done {
+    background: #e6f6ec;
+    color: #0b6a35;
+    border-color: #b3e0c5;
+}
+
+.status.active {
+    background: #eef2f7;
+    color: #3f4d5f;
+    border-color: #ccd6e2;
+}
+
+.status-icon {
+    font-size: 0.85em;
+    line-height: 1;
 }
 
 .message {
@@ -174,17 +267,17 @@ select {
 .message.error {
     background: #fff0f0;
     color: #8f1d1d;
-    border: 1px solid #f0c4c4;
+    border: 1px solid #e6a9a9;
 }
 
 .message.info {
     background: #eef6ff;
-    color: #204d7a;
-    border: 1px solid #c7ddf5;
+    color: #1c456d;
+    border: 1px solid #b4d2f0;
 }
 
 .empty-state {
-    color: #66788a;
+    color: var(--text-muted);
     padding: 18px 0 4px;
 }
 
@@ -195,17 +288,47 @@ select {
 }
 
 .small-button {
-    border: 1px solid #c3cfdd;
-    background: white;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
     border-radius: 10px;
     padding: 8px 10px;
     cursor: pointer;
 }
 
+.small-button:hover {
+    background: #eef3f9;
+}
+
+/* Destructive action: tinted rather than filled, so it reads as secondary
+   until hovered and never competes with the primary button. */
+.small-button.danger {
+    border-color: #d99a9a;
+    color: #98180f;
+}
+
+.small-button.danger:hover {
+    background: #fdeaea;
+    border-color: #b42318;
+}
+
 .help-note {
     margin-top: 20px;
     font-size: 0.92rem;
-    color: #617084;
+    color: var(--text-muted);
+}
+
+/* Visually hidden but still announced by screen readers. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 @media (max-width: 720px) {

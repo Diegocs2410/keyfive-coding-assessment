@@ -109,19 +109,21 @@ function App() {
                     but the behavior is intentionally unfinished.
                 </p>
 
-                {error && <div className="message error">{error}</div>}
-                {isLoading && <div className="message info">Loading tasks...</div>}
+                {error && <div className="message error" role="alert">{error}</div>}
+                {isLoading && <div className="message info" role="status">Loading tasks...</div>}
 
                 <form className="form-grid" onSubmit={handleAddTask}>
                     <input
                         className="input"
                         placeholder="Add a task title"
+                        aria-label="New task title"
                         value={title}
                         onChange={event => setTitle(event.target.value)}
                     />
 
                     <select
                         className="select"
+                        aria-label="New task priority"
                         value={priority}
                         onChange={event => setPriority(event.target.value)}
                     >
@@ -158,12 +160,14 @@ function App() {
                         <div className="form-grid" style={{ marginBottom: 12 }}>
                             <input
                                 className="input"
+                                aria-label="Task title"
                                 value={editingTask.title}
                                 onChange={event => setEditingTask(current => ({ ...current, title: event.target.value }))}
                             />
 
                             <select
                                 className="select"
+                                aria-label="Task priority"
                                 value={editingTask.priority}
                                 onChange={event => setEditingTask(current => ({ ...current, priority: event.target.value }))}
                             >
@@ -204,20 +208,25 @@ function TaskRow({ task, onEdit, onDelete, onToggle }) {
                 </div>
 
                 <div className="task-meta">
-                    <span className={badgeClass}>{task.priority}</span>
-                    {" · "}
-                    {task.isComplete ? "Completed" : "Active"}
+                    <span className={badgeClass}>{task.priority} priority</span>
+
+                    <span className={`status ${task.isComplete ? "done" : "active"}`}>
+                        <span className="status-icon" aria-hidden="true">
+                            {task.isComplete ? "✓" : "○"}
+                        </span>
+                        {task.isComplete ? "Completed" : "Active"}
+                    </span>
                 </div>
             </div>
 
             <div className="actions">
-                <button className="small-button" type="button" onClick={onToggle}>
+                <button className="small-button" type="button" onClick={onToggle} aria-label={`Toggle task: ${task.title}`}>
                     {task.isComplete ? "Undo" : "Done"}
                 </button>
-                <button className="small-button" type="button" onClick={onEdit}>
+                <button className="small-button" type="button" onClick={onEdit} aria-label={`Edit task: ${task.title}`}>
                     Edit
                 </button>
-                <button className="small-button danger" type="button" onClick={onDelete}>
+                <button className="small-button danger" type="button" onClick={onDelete} aria-label={`Delete task: ${task.title}`}>
                     Delete
                 </button>
             </div>
