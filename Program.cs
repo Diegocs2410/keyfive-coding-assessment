@@ -1,74 +1,22 @@
-using K5.Assessment.Starter.Models;
 using K5.Assessment.Starter.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<TaskStore>();
 
+// Registers the MVC action invoker, model binding and validation pipeline that
+// controllers rely on. Minimal APIs needed none of this.
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Using .NET Minimal APIs
-
-app.MapGet("/api/tasks", (TaskStore store) =>
-{
-    return Results.Ok(store.GetAll());
-});
-
-app.MapPost("/api/tasks", CreateTask);
-app.MapPut("/api/tasks/{id:int}", UpdateTask);
-app.MapDelete("/api/tasks/{id:int}", DeleteTask);
-app.MapPut("/api/tasks/{id:int}/toggle", ToggleTaskComplete);
+// Routes now come from the [Route]/[HttpGet]/[HttpPost] attributes on
+// TasksController instead of being listed here.
+app.MapControllers();
 
 app.MapFallbackToFile("index.html");
 
 app.Run();
-
-static IResult CreateTask(CreateTaskRequest request, TaskStore store)
-{
-    if (string.IsNullOrWhiteSpace(request.Title))
-        return Results.BadRequest(new { message = "Title is required." });
-
-    if (!TaskStore.IsValidPriority(request.Priority))
-        return Results.BadRequest(new { message = "Priority must be Low, Normal, or High." });
-
-    var task = store.Add(request.Title.Trim(), request.Priority);
-
-    // 201 Created + Location header pointing at the new resource
-    return Results.Created($"/api/tasks/{task!.Id}", task);
-}
-
-static IResult UpdateTask(int id, UpdateTaskRequest request, TaskStore store)
-{
-    if (string.IsNullOrWhiteSpace(request.Title))
-        return Results.BadRequest(new { message = "Title is required." });
-
-    if (!TaskStore.IsValidPriority(request.Priority))
-        return Results.BadRequest(new { message = "Priority must be Low, Normal, or High." });
-
-    var task = store.Update(id, request.Title.Trim(), request.Priority);
-
-    if (task is null)
-        return Results.NotFound(new { message = $"Task {id} was not found." });
-
-    return Results.Ok(task);
-}
-
-static IResult ToggleTaskComplete(int id, TaskStore store)
-{
-    var task = store.ToggleComplete(id);
-    if (task is null)
-        return Results.NotFound(new { message = $"Task {id} was not found." });
-    return Results.Ok(task);
-}
-
-static IResult DeleteTask(int id, TaskStore store)
-{
-    var task = store.Delete(id);
-    if (task is null)
-        return Results.NotFound(new { message = $"Task {id} was not found." });
-    return Results.Ok(task);
-}
-
