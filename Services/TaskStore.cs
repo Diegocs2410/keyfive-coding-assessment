@@ -23,20 +23,22 @@ public class TaskStore
 
     public TaskItem? Add(string title, string priority)
     {
-        // TODO:
-        // Create a new task record, add it to the in-memory list,
-        // increment nextId, and return the created task.
-
-        return null;
+        var task = new TaskItem(nextId++, title, priority, false);
+        tasks.Add(task);
+        return task;
     }
 
     public TaskItem? Update(int id, string title, string priority)
     {
-        // TODO:
-        // Find the matching task, replace it with an updated record,
-        // and return the updated task.
+        var index = tasks.FindIndex(t => t.Id == id);
+        if (index < 0)
+            return null;
 
-        return null;
+        // records are immutable, so we build a copy with the new values
+        // (`with` keeps the existing IsComplete flag untouched)
+        var updated = tasks[index] with { Title = title, Priority = priority };
+        tasks[index] = updated;
+        return updated;
     }
 
     public static bool IsValidPriority(string? value)

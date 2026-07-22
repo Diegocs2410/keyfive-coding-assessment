@@ -30,23 +30,49 @@ function App() {
     async function handleAddTask(event) {
         event.preventDefault();
 
-        // TODO:
-        // - validate the form if desired
-        // - call window.taskApi.addTask({ title, priority })
-        // - update local state so the new task appears without refreshing
-        // - disable the button while saving
-        // - handle API errors
+        if (!title.trim()) {
+            setError("Please enter a task title.");
+            return;
+        }
+
+        setIsSaving(true);
+        setError("");
+
+        try {
+            const created = await window.taskApi.addTask({ title: title.trim(), priority });
+            setTasks(current => [...current, created]);
+            setTitle("");
+            setPriority("Normal");
+        } catch (err) {
+            setError(err.message || "Unable to add task.");
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     async function handleSaveEdit(event) {
         event.preventDefault();
 
-        // TODO:
-        // - validate the edit form if desired
-        // - call window.taskApi.updateTask(editingTask.id, { title, priority })
-        // - update the matching task in local state
-        // - close the edit UI when save succeeds
-        // - handle API errors
+        if (!editingTask.title.trim()) {
+            setError("Please enter a task title.");
+            return;
+        }
+
+        setIsSaving(true);
+        setError("");
+
+        try {
+            const updated = await window.taskApi.updateTask(editingTask.id, {
+                title: editingTask.title.trim(),
+                priority: editingTask.priority
+            });
+            setTasks(current => current.map(task => (task.id === updated.id ? updated : task)));
+            setEditingTask(null);
+        } catch (err) {
+            setError(err.message || "Unable to save changes.");
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (

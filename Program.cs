@@ -26,23 +26,32 @@ app.Run();
 
 static IResult CreateTask(CreateTaskRequest request, TaskStore store)
 {
-    // TODO:
-    // Validate the request, add the task, and return the created task.
-    // Suggested responses:
-    // - 400 for validation errors
-    // - 201 with the created task on success
+    if (string.IsNullOrWhiteSpace(request.Title))
+        return Results.BadRequest(new { message = "Title is required." });
 
-    return Results.StatusCode(StatusCodes.Status501NotImplemented);
+    if (!TaskStore.IsValidPriority(request.Priority))
+        return Results.BadRequest(new { message = "Priority must be Low, Normal, or High." });
+
+    var task = store.Add(request.Title.Trim(), request.Priority);
+
+    // 201 Created + Location header pointing at the new resource
+    return Results.Created($"/api/tasks/{task!.Id}", task);
 }
 
 static IResult UpdateTask(int id, UpdateTaskRequest request, TaskStore store)
 {
-    // TODO:
-    // Update title and priority for the given task.
-    // Suggested responses:
-    // - 400 for validation errors
-    // - 404 if the task does not exist
-    // - 200 with the updated task on success
+    if (string.IsNullOrWhiteSpace(request.Title))
+        return Results.BadRequest(new { message = "Title is required." });
 
-    return Results.StatusCode(StatusCodes.Status501NotImplemented);
+    if (!TaskStore.IsValidPriority(request.Priority))
+        return Results.BadRequest(new { message = "Priority must be Low, Normal, or High." });
+
+    var task = store.Update(id, request.Title.Trim(), request.Priority);
+
+    if (task is null)
+        return Results.NotFound(new { message = $"Task {id} was not found." });
+
+    return Results.Ok(task);
 }
+
+
